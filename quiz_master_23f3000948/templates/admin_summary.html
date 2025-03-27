@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Summary - Quiz Master{% endblock %}
+
+{% block content %}
+<h1>Admin Summary Dashboard</h1>
+
+<!-- Quiz Participation and Performance -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Quiz Participation</h2>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="participationChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Quiz Performance</h2>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Scores and User Attempts -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Top Scores by Subject</h2>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="topScoresChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">User Attempts by Subject</h2>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="userAttemptsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.chart-container {
+    position: relative;
+    height: 400px;
+    width: 100%;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+.card {
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+canvas {
+    background-color: #ffffff;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.onload = function() {
+    console.log('Window loaded');
+
+    // chart creation
+    function createChart(canvasId, type, labels, data, label, color) {
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) {
+            console.error(`Canvas ${canvasId} not found`);
+            return;
+        }
+
+        return new Chart(ctx, {
+            type: type,
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: label,
+                    data: data,
+                    backgroundColor: color[0],
+                    borderColor: color[1],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    // Quiz Participation Chart
+    try {
+        const participationData = JSON.parse('{{ quiz_participation_data | safe }}');
+        createChart(
+            'participationChart',
+            'bar',
+            participationData.map(item => item.quiz),
+            participationData.map(item => item.total_students),
+            'Number of Students',
+            ['rgba(54, 162, 235, 0.2)', 'rgba(54, 162, 235, 1)']
+        );
+    } catch (error) {
+        console.error('Error creating participation chart:', error);
+    }
+
+    // Quiz Performance Chart
+    try {
+        const performanceData = JSON.parse('{{ performance_data | safe }}');
+        createChart(
+            'performanceChart',
+            'line',
+            performanceData.map(item => item.quiz),
+            performanceData.map(item => item.average_score),
+            'Average Score',
+            ['rgba(75, 192, 192, 0.2)', 'rgba(75, 192, 192, 1)']
+        );
+    } catch (error) {
+        console.error('Error creating performance chart:', error);
+    }
+
+    // Fetch and create Top Scores Chart
+    fetch('/admin/api/top-scores-data')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Top scores data received:', data);
+            
+            if (!Array.isArray(data) || data.length === 0) {
+                throw new Error('No data available');
+            }
+
+      
+            createChart(
+                'topScoresChart',
+                'bar',
+                data.map(item => item.quiz_name || 'Unnamed Quiz'),
+                data.map(item => item.percentage || 0),
+                'Top Student Scores Per Quiz (%)',
+                ['rgba(255, 99, 132, 0.2)', 'rgba(255, 99, 132, 1)']
+            );
+
+            // for tooltip (showing name of the student and score)
+            const topScoresChart = Chart.getChart('topScoresChart');
+            if (topScoresChart) {
+                topScoresChart.options.plugins = {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const dataIndex = context.dataIndex;
+                                const item = data[dataIndex];
+                                return [
+                                    `Student: ${item.student_name || 'Unknown'}`,
+                                    `Score: ${item.score || 0}/${item.total_questions || 0}`,
+                                    `Percentage: ${item.percentage || 0}%`
+                                ];
+                            }
+                        }
+                    }
+                };
+                topScoresChart.update();
+            }
+        })
+        .catch(error => {
+            console.error('Error with top scores chart:', error);
+            const container = document.getElementById('topScoresChart');
+            if (container) {
+                container.parentElement.innerHTML = 
+                    `<div class="alert alert-danger">
+                        Error loading chart data: ${error.message}
+                    </div>`;
+            }
+        });
+
+    // User Attempts Chart
+    fetch('/admin/api/user-attempts-data')
+        .then(response => response.json())
+        .then(data => {
+            createChart(
+                'userAttemptsChart',
+                'bar',
+                data.subjects,
+                data.attempt_counts,
+                'Number of Attempts',
+                ['rgba(153, 102, 255, 0.2)', 'rgba(153, 102, 255, 1)']
+            );
+        })
+        .catch(error => console.error('Error fetching user attempts:', error));
+};
+</script>
+{% endblock %}

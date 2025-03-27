@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Welcome, {{ current_user.fullname }}</h2>
+        <a href="{{ url_for('user_summary') }}" class="btn btn-primary">View Performance Summary</a>
+    </div>
+
+    <h3 class="mb-4">Your Recent Scores</h3>
+    {% if recent_scores %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Quiz</th>
+                    <th>Date</th>
+                    <th>Score</th>
+                    <th>Percentage</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for score in recent_scores %}
+                <tr>
+                    <td>{{ score.quiz.remarks or 'Quiz #' + score.quiz.id|string }}</td>
+                    <td>{{ score.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ score.total_scored }}/{{ score.total_questions }}</td>
+                    <td>{{ (score.total_scored / score.total_questions * 100) | round(1) }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <h4 class="alert-heading">No recent scores</h4>
+        <p>You haven't attempted any quizzes recently. Start exploring subjects and take quizzes to see your performance here.</p>
+        <hr>
+        <a href="{{ url_for('browse_subjects') }}" class="btn btn-primary">Browse Subjects</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

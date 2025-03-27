@@ -1,0 +1,75 @@
+<!-- COMES AFTER THE USER GIVES EXAM -->
+{% extends 'base.html' %}
+{% block title %}Quiz Result{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3>Quiz Result</h3>
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">{{ subject.name }} > {{ chapter.name }}</h5>
+            <h6 class="card-subtitle mb-3 text-muted">{{ quiz.date_of_quiz.strftime('%Y-%m-%d') }}</h6>
+            
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h1 class="display-4">{{ percentage|round|int }}%</h1>
+                            <p class="card-text">Your Score</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Details</h5>
+                            <ul class="list-group">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Total Questions
+                                    <span class="badge bg-primary rounded-pill">{{ score.total_questions }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Correct Answers
+                                    <span class="badge bg-success rounded-pill">{{ score.total_scored }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Incorrect Answers
+                                    <span class="badge bg-danger rounded-pill">{{ score.total_questions - score.total_scored }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Attempt Date
+                                    <span>{{ score.date.strftime('%Y-%m-%d %H:%M') }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                {% if percentage >= 70 %}
+                    <div class="alert alert-success" role="alert">
+                        <h4 class="alert-heading">Excellent!</h4>
+                        <p>Congratulations on your great performance!</p>
+                    </div>
+                {% elif percentage >= 50 %}
+                    <div class="alert alert-info" role="alert">
+                        <h4 class="alert-heading">Good job!</h4>
+                        <p>You've done well, but there's still room for improvement.</p>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning" role="alert">
+                        <h4 class="alert-heading">Keep practicing!</h4>
+                        <p>You might want to review this topic again.</p>
+                    </div>
+                {% endif %}
+                
+                <a href="{{ url_for('user_scores') }}" class="btn btn-primary">View All Scores</a>
+                <a href="{{ url_for('browse_chapters', subject_id=subject.id) }}" class="btn btn-secondary">Back to Chapters</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

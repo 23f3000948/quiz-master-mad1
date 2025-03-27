@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Quiz Master{% endblock %}
+
+{% block content %}
+<h1>Admin Dashboard</h1>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <h3 style="padding-left: 20px;">{{ stats.total_subjects }}</h3>
+        <p style="padding-left: 20px;">Subjects</p>
+    </div>
+    <div class="stat-card">
+        <h3 style="padding-left: 20px;">{{ stats.total_chapters }}</h3>
+        <p style="padding-left: 20px;">Chapters</p>
+    </div>
+    <div class="stat-card">
+        <h3 style="padding-left: 20px;">{{ stats.total_quizzes }}</h3>
+        <p style="padding-left: 20px;">Quizzes</p>
+    </div>
+    <div class="stat-card">
+        <h3 style="padding-left: 20px;">{{ stats.total_users }}</h3>
+        <p style="padding-left: 20px;">Users</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 class="card-title">Subjects</h2>
+                    <div class="d-flex">
+                        <input type="text" id="subjectSearch" class="form-control" placeholder="Search subjects...">
+                    </div>
+                    <a href="{{ url_for('add_subject') }}" class="btn btn-primary">Add Subject</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row" id="subjectsContainer">
+                    {% for subject in subjects %}
+                        <div class="col-md-4 mb-4 subject-card">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ subject.name }}</h5>
+                                    <p class="card-text">{{ subject.description | truncate(100) }}</p>
+                                </div>
+                                <div class="card-footer">
+                                    <a href="{{ url_for('view_subject', subject_id=subject.id) }}" class="btn btn-primary">View Chapters</a>
+                                    <form action="{{ url_for('delete_subject', subject_id=subject.id) }}" method="POST" style="display: inline;">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this subject? This will also delete all associated chapters and quizzes.')">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 class="card-title">Users</h2>
+                    <div class="d-flex">
+                        <input type="text" id="userSearch" class="form-control" placeholder="Search users...">
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Full Name</th>
+                                <th>Qualification</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                                <tr class="user-row">
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.fullname }}</td>
+                                    <td>{{ user.qualification }}</td>
+                                    <td>
+                                        {% if not user.is_admin %}
+                                        <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <a href="{{ url_for('delete_user', user_id=user.id) }}" class="btn btn-sm btn-danger" 
+                                           onclick="return confirm('Are you sure you want to delete this user?')">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 class="card-title">Quiz Participation</h2>
+                    <div class="d-flex">
+                        <input type="text" id="quizSearch" class="form-control" placeholder="Search quizzes...">
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Quiz</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for quiz in quizzes %}
+                            <tr class="quiz-row">
+                                <td>{{ quiz.remarks or 'Quiz #' + quiz.id|string }}</td>
+                                <td>{{ quiz.date_of_quiz.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <a href="{{ url_for('admin_quiz_participation', quiz_id=quiz.id) }}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i> View Participation
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <a href="{{ url_for('admin_summary') }}" class="btn btn-primary">View Summary</a>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Subject search
+    document.getElementById('subjectSearch').addEventListener('keyup', function() {
+        const searchTerm = this.value.toLowerCase();
+        const subjectCards = document.querySelectorAll('.subject-card');
+        
+        subjectCards.forEach(function(card) {
+            const subjectName = card.querySelector('.card-title').textContent.toLowerCase();
+            const subjectDesc = card.querySelector('.card-text').textContent.toLowerCase();
+            
+            if (subjectName.includes(searchTerm) || subjectDesc.includes(searchTerm)) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+    
+    // User search
+    document.getElementById('userSearch').addEventListener('keyup', function() {
+        const searchTerm = this.value.toLowerCase();
+        const userRows = document.querySelectorAll('.user-row');
+        
+        userRows.forEach(function(row) {
+            const username = row.cells[0].textContent.toLowerCase();
+            const fullname = row.cells[1].textContent.toLowerCase();
+            const qualification = row.cells[2].textContent.toLowerCase();
+            
+            if (username.includes(searchTerm) || fullname.includes(searchTerm) || qualification.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+    
+    // Quiz search
+    document.getElementById('quizSearch').addEventListener('keyup', function() {
+        const searchTerm = this.value.toLowerCase();
+        const quizRows = document.querySelectorAll('.quiz-row');
+        
+        quizRows.forEach(function(row) {
+            const quizName = row.cells[0].textContent.toLowerCase();
+            const quizDate = row.cells[1].textContent.toLowerCase();
+            
+            if (quizName.includes(searchTerm) || quizDate.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

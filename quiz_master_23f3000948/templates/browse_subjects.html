@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Subjects{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Browse Subjects</h1>
+    
+    <div class="mb-3">
+        <input type="text" id="subjectSearch" class="form-control" placeholder="Search subjects...">
+    </div>
+        
+    <div class="row" id="subjectsContainer">
+        {% for subject in subjects %}
+        <div class="col-md-4 mb-4 subject-card">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ subject.name }}</h5>
+                    <p class="card-text">{{ subject.description | truncate(100) }}</p>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('browse_chapters', subject_id=subject.id) }}" class="btn btn-primary">View Chapters</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Subject search
+    document.getElementById('subjectSearch').addEventListener('keyup', function() {
+        const searchTerm = this.value.toLowerCase();
+        const subjectCards = document.querySelectorAll('.subject-card');
+        
+        subjectCards.forEach(function(card) {
+            const subjectName = card.querySelector('.card-title').textContent.toLowerCase();
+            const subjectDesc = card.querySelector('.card-text').textContent.toLowerCase();
+            
+            if (subjectName.includes(searchTerm) || subjectDesc.includes(searchTerm)) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

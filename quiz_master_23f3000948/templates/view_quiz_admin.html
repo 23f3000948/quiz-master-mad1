@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}View Quiz{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Quiz Details</h2>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">{{ quiz.remarks or 'Quiz #' + quiz.id|string }}</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Date:</strong> {{ quiz.date_of_quiz.strftime('%Y-%m-%d') }}</p>
+            <p><strong>Duration:</strong> {{ quiz.time_duration }}</p>
+            <p><strong>Remarks:</strong> {{ quiz.remarks }}</p>
+        </div>
+    </div>
+
+    <h3 class="mb-4">Questions</h3>
+    {% if questions %}
+    <div class="list-group">
+        {% for question in questions %}
+        <div class="list-group-item">
+            <h5 class="mb-1">{{ question.question_statement }}</h5>
+            <ul class="list-unstyled">
+                <li><strong>Option 1:</strong> {{ question.option1 }}</li>
+                <li><strong>Option 2:</strong> {{ question.option2 }}</li>
+                <li><strong>Option 3:</strong> {{ question.option3 }}</li>
+                <li><strong>Option 4:</strong> {{ question.option4 }}</li>
+                <li><strong>Correct Option:</strong> {{ question.correct_option }}</li>
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <h4 class="alert-heading">No questions available</h4>
+        <p>There are currently no questions available for this quiz. Please add questions to this quiz.</p>
+    </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{{ url_for('edit_quiz', quiz_id=quiz.id) }}" class="btn btn-primary btn-sm me-2">
+            <i class="fas fa-edit"></i> Edit Quiz
+        </a>
+        <a href="{{ url_for('add_question', quiz_id=quiz.id) }}" class="btn btn-success btn-sm">
+            <i class="fas fa-plus"></i> Add Question
+        </a>
+    </div>
+</div>
+{% endblock %}

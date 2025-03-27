@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome to Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10 text-center">
+            <h1 class="display-4">Welcome to Quiz Master</h1>
+            <p class="lead">Your ultimate platform for exam preparation and knowledge assessment.</p>
+            
+            <div class="mt-5">
+                <div class="row justify-content-center">
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 shadow quiz-card">
+                            <div class="card-body">
+                                <i class="fas fa-book fa-3x mb-3 text-primary"></i>
+                                <h4 class="card-title">Multiple Subjects</h4>
+                                <p class="card-text">Access quizzes across various subjects to broaden your knowledge.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 shadow quiz-card">
+                            <div class="card-body">
+                                <i class="fas fa-chart-line fa-3x mb-3 text-primary"></i>
+                                <h4 class="card-title">Track Progress</h4>
+                                <p class="card-text">Monitor your performance and see your improvement over time.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 shadow quiz-card">
+                            <div class="card-body">
+                                <i class="fas fa-award fa-3x mb-3 text-primary"></i>
+                                <h4 class="card-title">Test Your Knowledge</h4>
+                                <p class="card-text">Challenge yourself with quizzes designed to enhance your understanding.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-5">
+                {% if not current_user.is_authenticated %}
+                    <p class="lead">Get started today</p>
+                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg mx-2">Login</a>
+                    <a href="{{ url_for('signup') }}" class="btn btn-outline-primary btn-lg mx-2">Sign Up</a>
+                {% else %}
+                    {% if current_user.is_admin %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary btn-lg">Go to Admin Dashboard</a>
+                    {% else %}
+                        <a href="{{ url_for('user_dashboard') }}" class="btn btn-primary btn-lg">Go to Dashboard</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

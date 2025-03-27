@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Quiz Participation{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Quiz Participation for {{ quiz.remarks or 'Quiz #' + quiz.id|string }}</h2>
+
+    {% if scores %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Score</th>
+                    <th>Total Questions</th>
+                    <th>Percentage</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for score in scores %}
+                <tr>
+                    <td>{{ score.user.fullname }}</td>
+                    <td>{{ score.total_scored }}</td>
+                    <td>{{ score.total_questions }}</td>
+                    <td>{{ (score.total_scored / score.total_questions * 100) | round(1) }}%</td>
+                    <td>{{ score.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <h4 class="alert-heading">No participants yet!</h4>
+        <p>No one has attempted this quiz yet. Please check back later.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
